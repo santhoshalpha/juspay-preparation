@@ -13,11 +13,11 @@ class Node {
     Node(String name, int childCapacity) {
         this.name = name;
 
-        this.children = new ArrayList<>();
+        
         this.lockedBy = -1;
 
         this.children = new ArrayList<>(childCapacity);
-        this.lockedBy = null;
+        
 
         this.lockedDescendantCount = 0;
         this.lockedDescendants = new HashSet<>();
