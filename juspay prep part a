@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.*;
+import java.util.ArrayDeque;
 
 class Node {
     String name;
@@ -27,7 +28,7 @@ public class LockingTree {
         }
         
         Node root = nodeMap.get(nodeNames.get(0));
-        Queue<Node> queue = new LinkedList<>();
+        Queue<Node> queue = new ArrayDeque<>();
         queue.offer(root);
         
         int index = 1;
