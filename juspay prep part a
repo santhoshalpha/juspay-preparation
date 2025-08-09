@@ -6,14 +6,14 @@ class Node {
     String name;
     Node parent;
     List<Node> children;
-    Integer lockedBy; // null if not locked
+    int lockedBy; // -1 if not locked
     int lockedDescendantCount;
     Set<Node> lockedDescendants;
     
     Node(String name) {
         this.name = name;
         this.children = new ArrayList<>();
-        this.lockedBy = null;
+        this.lockedBy = -1;
         this.lockedDescendantCount = 0;
         this.lockedDescendants = new HashSet<>();
     }
@@ -45,12 +45,12 @@ public class LockingTree {
     
     public boolean lock(String name, int uid) {
         Node node = nodeMap.get(name);
-        if (node.lockedBy != null || node.lockedDescendantCount > 0)
+        if (node.lockedBy != -1 || node.lockedDescendantCount > 0)
             return false;
         
         Node ancestor = node.parent;
         while (ancestor != null) {
-            if (ancestor.lockedBy != null) return false;
+            if (ancestor.lockedBy != -1) return false;
             ancestor = ancestor.parent;
         }
         
@@ -61,25 +61,25 @@ public class LockingTree {
     
     public boolean unlock(String name, int uid) {
         Node node = nodeMap.get(name);
-        if (!uidEquals(node.lockedBy, uid)) return false;
-        
-        node.lockedBy = null;
+        if (node.lockedBy != uid) return false;
+
+        node.lockedBy = -1;
         updateAncestorDescendants(node, -1);
         return true;
     }
     
     public boolean upgrade(String name, int uid) {
         Node node = nodeMap.get(name);
-        if (node.lockedBy != null || node.lockedDescendants.isEmpty())
+        if (node.lockedBy != -1 || node.lockedDescendants.isEmpty())
             return false;
 
         for (Node ln : node.lockedDescendants) {
-            if (!uidEquals(ln.lockedBy, uid)) return false;
+            if (ln.lockedBy != uid) return false;
         }
 
         List<Node> lockedNodes = new ArrayList<>(node.lockedDescendants);
         for (Node ln : lockedNodes) {
-            ln.lockedBy = null;
+            ln.lockedBy = -1;
             updateAncestorDescendants(ln, -1);
         }
 
@@ -98,9 +98,6 @@ public class LockingTree {
         }
     }
     
-    private boolean uidEquals(Integer a, int b) {
-        return a != null && a == b;
-    }
     
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
