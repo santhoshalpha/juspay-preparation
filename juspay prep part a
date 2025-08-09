@@ -10,9 +10,9 @@ class Node {
     int lockedDescendantCount;
     Set<Node> lockedDescendants;
     
-    Node(String name) {
+    Node(String name, int childCapacity) {
         this.name = name;
-        this.children = new ArrayList<>();
+        this.children = new ArrayList<>(childCapacity);
         this.lockedBy = null;
         this.lockedDescendantCount = 0;
         this.lockedDescendants = new HashSet<>();
@@ -24,7 +24,7 @@ public class LockingTree {
     
     public LockingTree(int n, int m, List<String> nodeNames) {
         for (String name : nodeNames) {
-            nodeMap.put(name, new Node(name));
+            nodeMap.put(name, new Node(name, m));
         }
         
         Node root = nodeMap.get(nodeNames.get(0));
