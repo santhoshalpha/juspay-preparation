@@ -50,6 +50,8 @@ public class LockingTree {
     
     public boolean lock(String name, int uid) {
         Node node = nodeMap.get(name);
+        if (node == null)
+            return false;
         if (node.lockedBy != -1 || node.lockedDescendantCount > 0)
             return false;
         
@@ -66,7 +68,7 @@ public class LockingTree {
     
     public boolean unlock(String name, int uid) {
         Node node = nodeMap.get(name);
-        if (node.lockedBy != uid) return false;
+        if (node == null || node.lockedBy != uid) return false;
 
         node.lockedBy = -1;
         updateAncestorDescendants(node, -1);
@@ -75,7 +77,7 @@ public class LockingTree {
     
     public boolean upgrade(String name, int uid) {
         Node node = nodeMap.get(name);
-        if (node.lockedBy != -1 || node.lockedDescendants.isEmpty())
+        if (node == null || node.lockedBy != -1 || node.lockedDescendants.isEmpty())
             return false;
 
         for (Node ln : node.lockedDescendants) {
