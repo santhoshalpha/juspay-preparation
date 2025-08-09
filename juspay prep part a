@@ -7,12 +7,14 @@ class Node {
     List<Node> children;
     Integer lockedBy; // null if not locked
     int lockedDescendantCount;
+    Set<Node> lockedDescendants;
     
     Node(String name) {
         this.name = name;
         this.children = new ArrayList<>();
         this.lockedBy = null;
         this.lockedDescendantCount = 0;
+        this.lockedDescendants = new HashSet<>();
     }
 }
 
@@ -67,40 +69,32 @@ public class LockingTree {
     
     public boolean upgrade(String name, int uid) {
         Node node = nodeMap.get(name);
-        if (node.lockedBy != null || node.lockedDescendantCount == 0)
+        if (node.lockedBy != null || node.lockedDescendants.isEmpty())
             return false;
-        
-        List<Node> lockedNodes = new ArrayList<>();
-        if (!collectLockedByUser(node, uid, lockedNodes))
-            return false;
-        
+
+        for (Node ln : node.lockedDescendants) {
+            if (!uidEquals(ln.lockedBy, uid)) return false;
+        }
+
+        List<Node> lockedNodes = new ArrayList<>(node.lockedDescendants);
         for (Node ln : lockedNodes) {
             ln.lockedBy = null;
             updateAncestorDescendants(ln, -1);
         }
-        
+
         node.lockedBy = uid;
         updateAncestorDescendants(node, 1);
         return true;
     }
-    
+
     private void updateAncestorDescendants(Node node, int delta) {
         Node ancestor = node.parent;
         while (ancestor != null) {
             ancestor.lockedDescendantCount += delta;
+            if (delta > 0) ancestor.lockedDescendants.add(node);
+            else ancestor.lockedDescendants.remove(node);
             ancestor = ancestor.parent;
         }
-    }
-    
-    private boolean collectLockedByUser(Node node, int uid, List<Node> result) {
-        if (node.lockedBy != null) {
-            if (!uidEquals(node.lockedBy, uid)) return false;
-            result.add(node);
-        }
-        for (Node child : node.children) {
-            if (!collectLockedByUser(child, uid, result)) return false;
-        }
-        return true;
     }
     
     private boolean uidEquals(Integer a, int b) {
